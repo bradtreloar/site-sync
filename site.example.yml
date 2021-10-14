@@ -1,0 +1,11 @@
+app: wordpress
+ssh:
+  user: exampleuser
+  host: ssh.example.com
+  port: 21212
+  key_filename: /path/to/key_filename
+  webauth:
+    login_url: "https://webauth.example.com"
+    webauth_url: "https://webauth.example.com/webauth_operation.php"
+    username: xxxxxxxxxxxxxx
+    password: xxxxxxxxxxxxxx
