@@ -165,9 +165,8 @@ class DrupalClient:
 class WordpressClient:
     DATABASE_FILEPATH = "wordpress/data/wordpress.sql"
 
-    def __init__(self, ssh_config, backup_bucket):
+    def __init__(self, ssh_config):
         self.remote_client = RemoteClient(ssh_config)
-        self.backup_bucket = backup_bucket
 
     def exists(self):
         return exists(self.remote_client, "wordpress")
