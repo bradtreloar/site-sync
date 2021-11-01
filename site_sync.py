@@ -151,11 +151,14 @@ class DrupalClient:
 
     def download_site_files(self, site_name):
         files_path = "web/sites/{}/files".format(site_name)
-        os.makedirs(files_path, exist_ok=True)
+        # Delete and then remake files directory.
+        local_dir = os.path.join("drupal", files_path)
+        shutil.rmtree(local_dir)
+        os.makedirs(local_dir, exist_ok=True)
         for filename in ls(self.remote_client, "drupal/" + files_path):
             if filename not in DrupalClient.IGNORED_FILES:
                 remote_path = "drupal/" + files_path + "/" + filename
-                local_path = os.path.join("drupal", files_path, filename)
+                local_path = os.path.join(local_dir, filename)
                 self.remote_client.download_file(remote_path, local_path)
 
     def start_webauth_session(self):
@@ -212,7 +215,10 @@ class WordpressClient:
 
     def download_site_files(self):
         uploads_path = "web/app/uploads"
-        os.makedirs(uploads_path, exist_ok=True)
+        # Delete and then remake files directory.
+        local_dir = os.path.join("wordpress", uploads_path)
+        shutil.rmtree(local_dir)
+        os.makedirs(local_dir, exist_ok=True)
         for filename in ls(self.remote_client, "wordpress/" + uploads_path):
             if filename != "cache":
                 remote_path = "wordpress/" + uploads_path + "/" + filename
