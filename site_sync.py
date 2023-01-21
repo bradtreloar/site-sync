@@ -6,7 +6,6 @@ import os
 from paramiko import AutoAddPolicy, SSHClient
 import re
 import requests
-from requests.sessions import Session
 from scp import SCPClient
 import shutil
 import urllib3
@@ -52,31 +51,6 @@ class RemoteClient:
     def download_file(self, src, dest):
         scp_client = self.get_scp_client()
         scp_client.get(src, dest, recursive=True)
-
-    def start_webauth_session(self):
-        try:
-            config = self.config["webauth"]
-        except KeyError:
-            raise NoWebauthConfigException
-        session = Session()
-        response = session.post(config["login_url"], {
-            "login": "login",
-            "username": config["username"],
-            "password": config["password"],
-        }, params={
-            "target": "",
-            "auth_id": "",
-            "ap_name": "",
-        }, verify=False)
-        if response.status_code != 200:
-            raise LoginError
-        response = session.post(config["webauth_url"], {
-            "rs": "is_lsys_image_exist",
-            "rsargs[]": "root",
-            "csrf_token": "",
-        }, verify=False)
-        if response.status_code != 200:
-            raise WebauthError
 
 
 class DrupalClient:
@@ -161,9 +135,6 @@ class DrupalClient:
                 local_path = os.path.join(local_dir, filename)
                 self.remote_client.download_file(remote_path, local_path)
 
-    def start_webauth_session(self):
-        self.remote_client.start_webauth_session()
-
 
 class WordpressClient:
     DATABASE_FILEPATH = "wordpress/data/wordpress.sql"
@@ -225,23 +196,12 @@ class WordpressClient:
                 local_path = os.path.join("wordpress", uploads_path, filename)
                 self.remote_client.download_file(remote_path, local_path)
 
-    def start_webauth_session(self):
-        self.remote_client.start_webauth_session()
-
 
 class RemoteCommandError(BaseException):
     pass
 
 
 class LoginError(BaseException):
-    pass
-
-
-class WebauthError(BaseException):
-    pass
-
-
-class NoWebauthConfigException(BaseException):
     pass
 
 
@@ -256,10 +216,6 @@ def main():
     app = config["app"]
     ssh_config = config["ssh"]
     client = CLIENTS[app](ssh_config)
-    try:
-        client.start_webauth_session()
-    except NoWebauthConfigException:
-        pass
     if app == "drupal":
         sites_settings = client.sites_settings()
         for site_name, site_settings in sites_settings.items():
